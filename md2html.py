@@ -49,36 +49,22 @@ def generate_markdown_from_file(uf_file_path):
     return markdown
 
 
-def parse_args(argv):
-    parser = argparse.ArgumentParser(prog=argv[0], description=DESCRIPTION)
-    parser.add_argument("title", help="The title for the HTML page")
-    parser.add_argument("uf_md_path", metavar="input_path",
-                        help="Path of input CommonMark file")
-    parser.add_argument("-o", dest="uf_html_path", metavar="output_path",
-                        help="Path to output HTML file")
-    parser.add_argument("-t", dest="uf_template_path", metavar="template_path",
-                        help="Path of HTML template",
-                        default=DEFAULT_UF_TEMPLATE_PATH)
-    parser.add_argument("-s", dest="uf_style_path", metavar="style_path",
-                        help="Path of cascading style sheet",
-                        default=DEFAULT_UF_CSS_PATH)
+def md2html(title, uf_md_path, uf_html_path=None, uf_template_path=None, 
+            uf_style_path=None):
 
-    args = parser.parse_args(argv[1:])
+    if not uf_template_path:
+        uf_template_path = DEFAULT_UF_TEMPLATE_PATH
 
-    return args
+    if not uf_style_path:
+        uf_style_path = DEFAULT_UF_CSS_PATH
 
+    markdown = generate_markdown_from_file(uf_md_path)
 
-def main(argv):
-    args = parse_args(argv)
+    output_html = render_markdown_as_html(title, markdown, uf_template_path,
+                                          uf_style_path)
 
-    markdown = generate_markdown_from_file(args.uf_md_path)
-
-    output_html = render_markdown_as_html(args.title, markdown,
-                                          args.uf_template_path,
-                                          args.uf_style_path)
-
-    if args.uf_html_path:
-        html_path = fmt_path(args.uf_html_path)
+    if uf_html_path:
+        html_path = fmt_path(uf_html_path)
         with open(html_path, "wb") as f:
             f.write(output_html)
 
@@ -87,5 +73,18 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    import sys
-    main(sys.argv)
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument("title", help="The title for the HTML page")
+    parser.add_argument("uf_md_path", metavar="input_path",
+                        help="Path of input CommonMark file")
+    parser.add_argument("-o", dest="uf_html_path", metavar="output_path",
+                        help="Path to output HTML file")
+    parser.add_argument("-t", dest="uf_template_path", metavar="template_path",
+                        help="Path of HTML template")
+    parser.add_argument("-s", dest="uf_style_path", metavar="style_path",
+                        help="Path of cascading style sheet")
+
+    args = parser.parse_args()
+
+    md2html(args.title, args.uf_md_path, args.uf_html_path, 
+            args.uf_template_path, args.uf_style_path)
